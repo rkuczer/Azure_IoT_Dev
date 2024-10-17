@@ -1,0 +1,50 @@
+name: Provision IoT Devices
+
+on:
+  workflow_dispatch:
+    inputs:
+      device_names:
+        description: "Comma-separated list of device names to provision"
+        required: true
+
+jobs:
+  provision_devices:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Set up .NET environment
+    - name: Set up .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0'  # Set your .NET version here
+
+    # Install dependencies
+    - name: Install dependencies
+      run: dotnet restore azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample
+
+    # Make the certificate generation script executable
+    - name: Make cert generation script executable
+      run: chmod +x ./generate_device_cert.sh
+
+    # Provision devices
+    - name: Provision IoT Devices
+      run: |
+        # Parse the list of devices from the input
+        IFS=',' read -ra DEVICES <<< "${{ github.event.inputs.device_names }}"
+
+        for device in "${DEVICES[@]}"; do
+          echo "Provisioning device: $device"
+          
+          # Generate the device certificate
+          ./generate_device_cert.sh "$device"
+          
+          # Run the .NET provisioning script for the device
+          dotnet run --project ./azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample \
+            -- -s "0ne00DD3EC2" \
+            -c "./certs/${device}.pfx" \
+            -p 1234  # PFX password
+        done
