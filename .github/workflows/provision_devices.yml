@@ -24,7 +24,7 @@ jobs:
 
     # Install dependencies
     - name: Install dependencies
-      run: dotnet restore azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample
+      run: dotnet restore azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample/X509Sample.csproj
 
     # Make the certificate generation script executable
     - name: Make cert generation script executable
@@ -43,7 +43,8 @@ jobs:
           ./generate_device_cert.sh "$device"
           
           # Run the .NET provisioning script for the device
-          dotnet run --project ./azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample \
+          dotnet run --project ./azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample/X509Sample.csproj
+
             -- -s "0ne00DD3EC2" \
             -c "./certs/${device}.pfx" \
             -p 1234  # PFX password
