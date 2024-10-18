@@ -47,7 +47,7 @@ jobs:
           ls -l ./certs/certs
           
           # Log the command to be run
-          echo "Running command: dotnet run --project ./azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample/X509Sample.csproj -- -s '0ne00DD3EC2' -c './certs/${device}.pfx' -p 1234"
+          echo "Running command: dotnet run --project ./azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample/X509Sample.csproj -- -s '0ne00DD3EC2' -c './certs/${device}-full-chain.cert.pfx' -p 1234"
 
           # Run the .NET provisioning script for the device
           dotnet run --project ./azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample/X509Sample.csproj \
