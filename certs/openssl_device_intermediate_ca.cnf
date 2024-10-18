@@ -6,16 +6,16 @@ default_ca = CA_default
 [ CA_default ]
 # Directory and file locations.
 dir               = .
-certs             = $dir/certs
-crl_dir           = $dir/crl
-new_certs_dir     = $dir/newcerts
-database          = $dir/index.txt
-serial            = $dir/serial
-RANDFILE          = $dir/private/.rand
+certs             = certs/certs
+crl_dir           = certs/crl
+new_certs_dir     = certs/newcerts
+database          = certs/index.txt
+serial            = certs/serial
+RANDFILE          = certs/private/.rand
 
 # The root key and root certificate.
-private_key       = $dir/private/azure-iot-test-only.intermediate.key.pem
-certificate       = $dir/certs/azure-iot-test-only.intermediate.cert.pem
+private_key       = certs/private/azure-iot-test-only.intermediate.key.pem
+certificate       = certs/certs/azure-iot-test-only.intermediate.cert.pem
 
 # For certificate revocation lists.
 crlnumber         = $dir/crlnumber
