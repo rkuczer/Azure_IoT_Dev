@@ -1,25 +1,30 @@
 #!/bin/bash
 set -e
 
-# Set the path to the X509Sample project
-PROJECT_PATH="azure-iot-sdk-csharp/provisioning/device/samples/getting-started/X509Sample/X509Sample.csproj"
+# Variables
+DEVICE_NAME="$1"
+PRIVATE_KEY="./certs/private/${DEVICE_NAME}.key.pem" 
+CSR="./certs/csr/${DEVICE_NAME}.csr.pem"
+DEVICE_CERT="./certs/certs/${DEVICE_NAME}.cert.pem"
+FULL_CHAIN_CERT="./certs/certs/${DEVICE_NAME}-full-chain.cert.pem"
+PFX_CERT="./certs/certs/${DEVICE_NAME}-full-chain.cert.pfx"
+PFX_PASSWORD="1234"
+INTERMEDIATE_CERT="./certs/certs/azure-iot-test-only.intermediate.cert.pem"
+ROOT_CA="./certs/certs/azure-iot-test-only.root.ca.cert.pem"
 
-# Verify that the project file exists
-if [ ! -f "$PROJECT_PATH" ]; then
-  echo "Error: Project file $PROJECT_PATH does not exist."
-  exit 1
-fi
+# Create a new private key for the device
+openssl genrsa -out "$PRIVATE_KEY" 4096
 
-# Restore the .NET dependencies
-echo "Restoring .NET dependencies for $PROJECT_PATH..."
-dotnet restore "$PROJECT_PATH"
+# Create a CSR (Certificate Signing Request) for the device
+openssl req -config ./certs/openssl_device_intermediate_ca.cnf -key "$PRIVATE_KEY" -subj "/CN=${DEVICE_NAME}" -new -sha256 -out "$CSR"
 
-# Build the project
-echo "Building the project..."
-dotnet build "$PROJECT_PATH"
+# Create the device certificate using the intermediate CA
+openssl ca -batch -config ./certs/openssl_device_intermediate_ca.cnf -passin pass:1234 -extensions usr_cert -days 30 -notext -md sha256 -in "$CSR" -out "$DEVICE_CERT"
 
-# Optionally run the project (you can uncomment the line below if needed)
-# echo "Running the project..."
-# dotnet run --project "$PROJECT_PATH" -- -s <id-scope> -c <path-to-certificate>.pfx -p <pfx-password>
+# Concatenate the device certificate with the intermediate and root certificates to create the full chain
+cat "$DEVICE_CERT" "$INTERMEDIATE_CERT" "$ROOT_CA" > "$FULL_CHAIN_CERT"
 
-echo "Process completed successfully."
+# Create a PFX file from the full chain certificate and private key
+openssl pkcs12 -inkey "$PRIVATE_KEY" -in "$FULL_CHAIN_CERT" -export -passin pass:1234 -passout pass:"$PFX_PASSWORD" -out "$PFX_CERT"
+
+echo "Certificate for $DEVICE_NAME generated successfully."
