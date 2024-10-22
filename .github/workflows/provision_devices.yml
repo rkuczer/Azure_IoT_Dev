@@ -56,3 +56,18 @@ jobs:
             -p 1234  # PFX password
         done
 
+    # Archive certificates and related files
+    - name: Archive certificates
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: certificates
+        path: |
+          ./certs/certs/**/*.cert.pem
+          ./certs/certs/**/*-full-chain.cert.pem
+          ./certs/certs/**/*-full-chain.cert.pfx
+          ./certs/csr/**/*.csr.pem
+          ./certs/newcerts/**
+          ./certs/private/**/*.key.pem
+          ./certs/index.txt
+    
